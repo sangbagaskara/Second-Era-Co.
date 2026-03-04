@@ -966,10 +966,11 @@ function openDetail(id) {
         <div class="detail-meta">
           ${p.brand ? `<div class="meta-item"><div class="detail-label">Brand</div><div class="meta-val">${escHtml(p.brand)}</div></div>` : ''}
           ${p.size ? `<div class="meta-item"><div class="detail-label">Ukuran</div><div class="meta-val">${escHtml(p.size)}</div></div>` : ''}
-          ${p.material ? `<div class="meta-item"><div class="detail-label">Material</div><div class="meta-val">${escHtml(p.material)}</div></div>` : ''}
           ${p.color ? `<div class="meta-item"><div class="detail-label">Warna</div><div class="meta-val">${escHtml(p.color)}</div></div>` : ''}
-          ${p.weight ? `<div class="meta-item"><div class="detail-label">Berat</div><div class="meta-val">${escHtml(p.weight)} gr</div></div>` : ''}
           <div class="meta-item"><div class="detail-label">Status</div><div class="meta-val ${stockClass(p)}">${stockLabel(p)}</div></div>
+          ${p.material ? `<div class="meta-item"><div class="detail-label">Material</div><div class="meta-val">${escHtml(p.material)}</div></div>` : ''}
+          ${p.weight ? `<div class="meta-item"><div class="detail-label">Berat</div><div class="meta-val">${escHtml(p.weight)} gr</div></div>` : ''}
+          ${(p.panjang || p.lebar || p.tinggi) ? `<div class="meta-item"><div class="detail-label">Dimensi</div><div class="meta-val">${p.panjang||'—'} × ${p.lebar||'—'} × ${p.tinggi||'—'} cm</div></div>` : ''}
         </div>
         ${p.notes ? `<hr class="detail-divider"><div class="detail-label">Catatan Seller</div><div class="detail-desc" style="font-size:12px;margin-top:4px;">${escHtml(p.notes)}</div>` : ''}
         <hr class="detail-divider">
