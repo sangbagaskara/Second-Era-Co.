@@ -755,7 +755,7 @@ const SEED_PRODUCTS = [{"id":"1_1772535015167","name":"Jaket Gunung Burton size 
 // ── INIT ──
 // ── GOOGLE SHEETS ──
 const GS_KEY = 'sec_era_gs_url';
-const GS_URL = 'https://script.google.com/macros/s/AKfycbw4pogP6aKp0i89s69D4PCJc7dl3dDzq3CDfThP3eKTcfHII60Ihy__wwXcZEuq5-uZ/exec';
+const GS_URL = 'https://script.google.com/macros/s/AKfycbxAQCiHYogK2y_rXdIn3RDFEEHVs_kC7zAVAlA09WW2jBsnxuenrJBVNigKskiBOsUD/exec';
 
 function saveGsUrlAndLoad() {
   const url = (document.getElementById('gsUrlInput') || {}).value || '';
@@ -967,7 +967,7 @@ function openDetail(id) {
           ${p.size ? `<div class="meta-item"><div class="detail-label">UKURAN</div><div class="meta-val">${escHtml(p.size)}</div></div>` : ''}
           ${p.color ? `<div class="meta-item"><div class="detail-label">WARNA</div><div class="meta-val">${escHtml(p.color)}</div></div>` : ''}
           ${p.brand ? `<div class="meta-item"><div class="detail-label">BRAND ASAL</div><div class="meta-val">${escHtml(p.brand)}</div></div>` : ''}
-          ${p.weight ? `<div class="meta-item"><div class="detail-label">BERAT</div><div class="meta-val">${escHtml(p.weight)} gram</div></div>` : ''}
+          ${(p.weight||p.berat) ? `<div class="meta-item"><div class="detail-label">BERAT</div><div class="meta-val">${escHtml(p.weight||p.berat)} gram</div></div>` : ''}
           ${(p.panjang || p.lebar || p.tinggi) ? `<div class="meta-item"><div class="detail-label">DIMENSI</div><div class="meta-val">${p.panjang||'—'} × ${p.lebar||'—'} × ${p.tinggi||'—'} cm</div></div>` : ''}
           <div class="meta-item"><div class="detail-label">STATUS</div><div class="meta-val ${stockClass(p)}">${stockLabel(p)}</div></div>
           ${p.material ? `<div class="meta-item"><div class="detail-label">MATERIAL</div><div class="meta-val">${escHtml(p.material)}</div></div>` : ''}
