@@ -145,18 +145,85 @@
   }
 
   /* ── FILTERS ── */
+  .search-bar-wrap {
+    padding: 16px 32px 0;
+    background: var(--cream);
+    position: sticky;
+    top: 72px;
+    z-index: 91;
+  }
+  .search-input-wrap {
+    position: relative;
+    max-width: 600px;
+  }
+  .search-input-wrap svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+  #searchInput {
+    width: 100%;
+    padding: 10px 14px 10px 40px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--charcoal);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color .2s;
+  }
+  #searchInput:focus { border-color: var(--charcoal); }
+  #searchInput::placeholder { color: var(--muted); }
+  .search-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 16px;
+    padding: 0;
+    display: none;
+  }
   .filters-bar {
-    padding: 24px 32px;
+    padding: 12px 32px 16px;
     display: flex;
     align-items: center;
     gap: 12px;
     flex-wrap: wrap;
     border-bottom: 1px solid var(--border);
     position: sticky;
-    top: 72px;
+    top: 116px;
     z-index: 90;
     background: var(--cream);
   }
+  .sort-select {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .08em;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--charcoal);
+    padding: 6px 10px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%231B1B1D'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+  .sort-select:focus { border-color: var(--charcoal); }
+  .search-highlight { background: #FFE08A; border-radius: 2px; }
 
   .filters-label {
     font-family: 'IBM Plex Mono', monospace;
@@ -628,10 +695,27 @@
   <div class="hero-sub">Preloved & original pieces — Curated with Intention.</div>
 </div>
 
+<!-- SEARCH -->
+<div class="search-bar-wrap">
+  <div class="search-input-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="Cari produk, brand, kategori..." oninput="onSearch(this.value)">
+    <button class="search-clear" id="searchClear" onclick="clearSearch()">&#10005;</button>
+  </div>
+</div>
+
 <!-- FILTERS -->
 <div class="filters-bar">
   <span class="filters-label">FILTER</span>
   <div id="filterBtns" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+  <select class="sort-select" id="sortSelect" onchange="onSort(this.value)">
+    <option value="default">URUTAN DEFAULT</option>
+    <option value="price-asc">HARGA: TERMURAH</option>
+    <option value="price-desc">HARGA: TERMAHAL</option>
+    <option value="name-asc">NAMA: A → Z</option>
+    <option value="name-desc">NAMA: Z → A</option>
+    <option value="stock">READY STOCK</option>
+  </select>
   <span class="product-count" id="productCount">— produk</span>
 </div>
 
@@ -661,6 +745,8 @@ const LOGO_KEY = 'sec_era_logo';
 // ── STATE ──
 let products = [];
 let activeFilter = 'ALL';
+let searchQuery = '';
+let activeSort = 'default';
 const CATS = ['ALL','OUTERWEAR','TOPS','DENIM','ACCESSORIES','FOOTWEAR','SCENT','LAINNYA'];
 
 // ── SEED DATA (same as admin) ──
@@ -733,6 +819,28 @@ function loadProducts() {
 }
 
 // ── FILTERS ──
+// ── SEARCH & SORT ──
+function onSearch(val) {
+  searchQuery = val.trim();
+  const clearBtn = document.getElementById('searchClear');
+  if(clearBtn) clearBtn.style.display = searchQuery ? 'block' : 'none';
+  renderGrid();
+}
+
+function clearSearch() {
+  searchQuery = '';
+  const inp = document.getElementById('searchInput');
+  const clearBtn = document.getElementById('searchClear');
+  if(inp) inp.value = '';
+  if(clearBtn) clearBtn.style.display = 'none';
+  renderGrid();
+}
+
+function onSort(val) {
+  activeSort = val;
+  renderGrid();
+}
+
 function buildFilters() {
   const wrap = document.getElementById('filterBtns');
   wrap.innerHTML = '';
@@ -751,17 +859,49 @@ function buildFilters() {
 function renderGrid() {
   const grid = document.getElementById('productGrid');
   const countEl = document.getElementById('productCount');
-  const filtered = activeFilter === 'ALL' ? products : products.filter(p => p.cat === activeFilter);
-  // Only show non-sold items first, then sold
-  const sorted = [...filtered.filter(p => p.status !== 'sold'), ...filtered.filter(p => p.status === 'sold')];
-  countEl.textContent = sorted.length + ' produk';
 
-  if (!sorted.length) {
+  // 1. Filter by category
+  let result = activeFilter === 'ALL' ? [...products] : products.filter(p => p.cat === activeFilter);
+
+  // 2. Filter by search query
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    result = result.filter(p =>
+      (p.name||'').toLowerCase().includes(q) ||
+      (p.desc||'').toLowerCase().includes(q) ||
+      (p.brand||'').toLowerCase().includes(q) ||
+      (p.cat||'').toLowerCase().includes(q) ||
+      (p.color||'').toLowerCase().includes(q) ||
+      (p.material||'').toLowerCase().includes(q) ||
+      (p.condition||'').toLowerCase().includes(q) ||
+      (p.sku||'').toLowerCase().includes(q) ||
+      (p.notes||'').toLowerCase().includes(q)
+    );
+  }
+
+  // 3. Sort
+  switch(activeSort) {
+    case 'price-asc':  result.sort((a,b) => parseInt(a.price||0) - parseInt(b.price||0)); break;
+    case 'price-desc': result.sort((a,b) => parseInt(b.price||0) - parseInt(a.price||0)); break;
+    case 'name-asc':   result.sort((a,b) => (a.name||'').localeCompare(b.name||'')); break;
+    case 'name-desc':  result.sort((a,b) => (b.name||'').localeCompare(a.name||'')); break;
+    case 'stock':      result.sort((a,b) => {
+      const aAvail = a.status !== 'sold' && parseInt(a.stock||0) > 0 ? 1 : 0;
+      const bAvail = b.status !== 'sold' && parseInt(b.stock||0) > 0 ? 1 : 0;
+      return bAvail - aAvail;
+    }); break;
+    default: // sold items always last
+      result = [...result.filter(p => p.status !== 'sold'), ...result.filter(p => p.status === 'sold')];
+  }
+
+  if(countEl) countEl.textContent = result.length + ' produk';
+
+  if (!result.length) {
     grid.innerHTML = `<div class="empty-state"><div class="icon">📦</div><h3>Tidak ada produk</h3><p>Kategori ini belum tersedia</p></div>`;
     return;
   }
 
-  grid.innerHTML = sorted.map(p => {
+  grid.innerHTML = result.map(p => {
     const isSold = p.status === 'sold' || parseInt(p.stock) === 0;
     return `
     <div class="product-card" onclick="openDetail('${p.id}')">
