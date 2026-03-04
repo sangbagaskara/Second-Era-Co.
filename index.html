@@ -711,10 +711,10 @@ function loadProducts() {
       bar.style.transform = 'scaleX(1)';
       setTimeout(() => { bar.style.transform = 'scaleX(0)'; }, 400);
       if (data.ok && data.products && data.products.length > 0) {
-        const sheetSkus = new Set(data.products.map(p => p.sku));
-        const missing = SEED_PRODUCTS.filter(p => !sheetSkus.has(p.sku));
-        products = [...data.products, ...missing];
+        // Sheets berhasil load — pakai data Sheets saja, abaikan SEED
+        products = data.products;
       } else {
+        // Sheets kosong — fallback ke SEED
         products = [...SEED_PRODUCTS];
       }
       buildFilters(); renderGrid();
