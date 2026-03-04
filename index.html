@@ -623,7 +623,7 @@
 <div class="hero-banner">
   <div class="hero-label">Second Era Co. — Koleksi</div>
   <div class="hero-title">TIMELESS <em>STYLE.</em><br>SIGNATURE <em>SCENT.</em></div>
-  <div class="hero-sub">Preloved & original pieces — kurasi ketat, harga jujur.</div>
+  <div class="hero-sub">Preloved & original pieces — Curated with Intention.</div>
 </div>
 
 <!-- FILTERS -->
@@ -667,26 +667,19 @@ const SEED_PRODUCTS = [{"id":"1_1772535015167","name":"Jaket Gunung Burton size 
 // ── INIT ──
 // ── GOOGLE SHEETS ──
 const GS_KEY = 'sec_era_gs_url';
-let GS_URL = localStorage.getItem(GS_KEY) || '';
+const GS_URL = 'https://script.google.com/macros/s/AKfycbzx9r562OaOWNZXS-1r-QF6d6kWV4rIq4WAnzX37PIJo5NvW4D0pfxP7LYoNKOOueVF/exec';
 
 function saveGsUrlAndLoad() {
-  const url = document.getElementById('gsUrlInput').value.trim();
-  if (!url) return;
-  GS_URL = url;
-  localStorage.setItem(GS_KEY, url);
-  document.getElementById('gs-setup').style.display = 'none';
+  const url = (document.getElementById('gsUrlInput') || {}).value || '';
+  if (!url.trim()) return;
+  GS_URL = url.trim();
+  localStorage.setItem(GS_KEY, GS_URL);
+  const el = (document.getElementById('gs-setup') || {});
+  if (el) el.style.display = 'none';
   loadProducts();
 }
 
 window.onload = () => {
-  if (GS_URL) {
-    document.getElementById('gs-setup').style.display = 'none';
-  } else {
-    // Show setup prompt after 2 seconds if not configured
-    setTimeout(() => {
-      document.getElementById('gs-setup').style.display = 'block';
-    }, 2000);
-  }
   loadProducts();
 };
 
